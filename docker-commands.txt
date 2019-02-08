@@ -1,0 +1,41 @@
+
+mysql
+docker run -p 3306:3306 --name my-mysql -e MYSQL_ROOT_PASSWORD=12345678 -d mysql:8.0
+
+mysql -h localhost -P 3306 --protocol=tcp -u root -p
+ALTER USER root IDENTIFIED WITH mysql_native_password BY '12345678';
+
+php myadmin
+docker run --name my-myadmin -d --link my-mysql:db -p 8080:80 phpmyadmin/phpmyadmin
+
+PHP apache
+docker run -d --link my-mysql -p 80:80 --name my-apache-php-app -v "$PWD":/var/www/html php:7.2-apache
+
+this willnot have required moduels
+
+so make your own image
+
+create yourwon dockerfile
+
+FROM php:7.2-apache
+
+RUN docker-php-ext-install pdo pdo_mysql
+
+docker run -d --link my-mysql -p 80:80 --name my-apache-php-kk -v "$PWD":/var/www/html php-apache-kk
+
+
+With out --link
+
+create network
+docker network create my-network
+
+start services in network
+
+docker run -p 3306:3306 --name my-mysql -e MYSQL_ROOT_PASSWORD=12345678 -d --net=my-network mysql:8.0
+
+docker run --name my-myadmin -d -p 8081:80 --net=my-network  -e PMA_HOST="my-mysql" -e PMA_PORT=3306 phpmyadmin/phpmyadmin
+
+docker run -d -p 80:80 --name my-apache-php-kk -v "$PWD":/var/www/html --net=my-network php-apache-kk
+
+sudo docker run -d -p 8080:80 -p 8443:443 --net=my-network jnyryan/simplesamlphp
+
